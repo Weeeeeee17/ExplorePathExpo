@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "ExplorePath",
+    "slug": "explorepath",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.example.explorepath.preview",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "ExplorePath 需要你使用 App 期間的位置，才能從目前位置尋找附近地點、提供方向並判定抵達。",
+        "NSMotionUsageDescription": "ExplorePath 使用 iPhone 步數提供探索加成；拒絕後仍可完成 GPS 探索。"
+      }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "ExplorePath 需要你使用 App 期間的位置，才能從目前位置尋找附近地點、提供方向並判定抵達。"
+        }
+      ]
+    ],
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#F7F2E3"
+    }
+  }
+}
