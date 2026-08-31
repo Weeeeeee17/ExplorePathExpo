@@ -4,11 +4,19 @@ const earthRadiusMeters = 6_371_000;
 const walkingMetersPerMinute = 70;
 const routeDetourFactor = 1.35;
 const dwellAllowanceMinutes = 1;
+const travelBudgetRatio = 0.8;
+export const outboundBudgetRatio = 0.8;
 
 export interface DwellState {
   dwellMilliseconds: number;
   lastDwellSampleAt: number | null;
   outsideSince: number | null;
+}
+
+export interface DeviationState {
+  windowStartedAt: number | null;
+  startDistanceMeters: number | null;
+  suggested: boolean;
 }
 
 function toRadians(degrees: number) {
@@ -57,18 +65,55 @@ export function arrivalRadiusMeters(accuracyMeters: number | null): number {
   return Math.round(Math.max(40, Math.min(100, accuracy * 1.5)));
 }
 
+export function dwellTargetSeconds(accuracyMeters: number | null): 30 | 45 | 60 {
+  const accuracy = accuracyMeters ?? 60;
+  if (accuracy <= 25) return 30;
+  if (accuracy <= 60) return 45;
+  return 60;
+}
+
 export function estimatedWalkingMinutes(straightLineMeters: number): number {
   return Math.max(1, Math.ceil((straightLineMeters * routeDetourFactor) / walkingMetersPerMinute));
 }
 
 export function estimatedTotalMinutes(straightLineMeters: number): number {
-  return estimatedWalkingMinutes(straightLineMeters) + dwellAllowanceMinutes;
+  const travelAndDwell = estimatedWalkingMinutes(straightLineMeters) + dwellAllowanceMinutes;
+  return Math.max(3, Math.ceil(travelAndDwell / travelBudgetRatio));
 }
 
 export function searchRadiusMeters(durationMinutes: number): number {
-  const walkingMinutes = Math.max(1, durationMinutes - dwellAllowanceMinutes);
+  const walkingMinutes = Math.max(1, durationMinutes * outboundBudgetRatio);
   const straightLineBudget = (walkingMinutes * walkingMetersPerMinute) / routeDetourFactor;
-  return Math.round(Math.max(350, Math.min(3500, straightLineBudget)));
+  return Math.round(Math.max(300, Math.min(3500, straightLineBudget)));
+}
+
+export function destinationTarget(destination: Destination): GeoPoint {
+  return {
+    latitude: destination.arrivalLatitude ?? destination.latitude,
+    longitude: destination.arrivalLongitude ?? destination.longitude,
+  };
+}
+
+export function updateDeviationState(
+  state: DeviationState,
+  distance: number,
+  accuracyMeters: number | null,
+  now: number,
+): DeviationState {
+  if (accuracyMeters !== null && accuracyMeters > 100) return state;
+  if (state.suggested) return state;
+  if (state.windowStartedAt === null || state.startDistanceMeters === null) {
+    return { windowStartedAt: now, startDistanceMeters: distance, suggested: false };
+  }
+
+  const elapsed = now - state.windowStartedAt;
+  if (distance <= state.startDistanceMeters || elapsed > 4 * 60_000) {
+    return { windowStartedAt: now, startDistanceMeters: distance, suggested: false };
+  }
+  if (elapsed >= 2 * 60_000 && distance - state.startDistanceMeters >= 100) {
+    return { ...state, suggested: true };
+  }
+  return state;
 }
 
 export function destinationDirection(origin: GeoPoint, destination: Destination): string {

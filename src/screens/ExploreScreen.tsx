@@ -1,5 +1,5 @@
-import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
   Card,
@@ -23,37 +23,17 @@ function ModeBadge({ mode }: { mode: TrackingMode }) {
   return (
     <View style={[styles.modeBadge, mode === 'real' && styles.realBadge]}>
       <View style={[styles.modeDot, mode === 'real' && styles.realDot]} />
-      <Text style={styles.modeText}>{mode === 'real' ? '真實感測模式' : '假資料體驗'}</Text>
-    </View>
-  );
-}
-
-function ModeSwitch() {
-  const { mode, setMode } = useExplorePath();
-  return (
-    <View style={styles.modeSwitch}>
-      {(['real', 'demo'] as TrackingMode[]).map((item) => {
-        const selected = mode === item;
-        return (
-          <Pressable
-            key={item}
-            accessibilityRole="button"
-            accessibilityState={{ selected }}
-            onPress={() => setMode(item)}
-            style={[styles.modeChoice, selected && styles.modeChoiceSelected]}
-          >
-            <Text style={[styles.modeChoiceText, selected && styles.modeChoiceTextSelected]}>
-              {item === 'real' ? '真實探索' : 'Demo'}
-            </Text>
-          </Pressable>
-        );
-      })}
+      <Text style={styles.modeText}>{mode === 'real' ? '真實感測模式' : '完整展示模式'}</Text>
     </View>
   );
 }
 
 function Preparation() {
-  const { durationMinutes, mode, theme, chooseDuration, chooseTheme, search } = useExplorePath();
+  const { durationMinutes, mode, theme, motionPermissionState, chooseDuration, chooseTheme, search, openMotionSettings } = useExplorePath();
+  const [showCustom, setShowCustom] = useState(!durationOptions.includes(durationMinutes as 20 | 40 | 60));
+  const [customText, setCustomText] = useState(String(durationMinutes));
+  const customValue = Number(customText);
+  const customValid = Number.isFinite(customValue) && customValue >= 10 && customValue <= 180;
   return (
     <Page>
       <View style={styles.headerRow}>
@@ -65,11 +45,10 @@ function Preparation() {
         選一段時間與想看的主題。我們只給方向與線索，讓步行自然發生。
       </Text>
 
-      <ModeSwitch />
       <Text style={[typography.small, styles.modeHelp]}>
         {mode === 'real'
           ? '使用 iPhone GPS、指南針與可選步數；真實進度只存在這支 iPhone。'
-          : '使用台北假地點與模擬按鈕；Demo 不會改動真實 XP、寵物或足跡。'}
+          : '展示模式使用假地點、模擬按鈕與獨立存檔；不會改動真實健康足跡。'}
       </Text>
 
       <Card style={styles.sectionCard}>
@@ -84,6 +63,31 @@ function Preparation() {
             />
           ))}
         </View>
+        <Pressable onPress={() => setShowCustom((value) => !value)} style={styles.customToggle}>
+          <Text style={styles.customToggleText}>{showCustom ? '收起自訂時間' : '自訂時間'}</Text>
+        </Pressable>
+        {showCustom ? (
+          <View style={styles.customRow}>
+            <TextInput
+              accessibilityLabel="自訂探索分鐘"
+              keyboardType="number-pad"
+              maxLength={3}
+              onChangeText={setCustomText}
+              placeholder="10–180"
+              placeholderTextColor="#929687"
+              style={styles.customInput}
+              value={customText}
+            />
+            <Pressable
+              disabled={!customValid}
+              onPress={() => chooseDuration(Math.round(customValue))}
+              style={[styles.customApply, !customValid && styles.customDisabled]}
+            >
+              <Text style={styles.customApplyText}>套用分鐘</Text>
+            </Pressable>
+          </View>
+        ) : null}
+        <Text style={[typography.small, styles.budgetHelp]}>時間是單程探索上限：步行搜尋 80%／彈性緩衝 20%。回程不納入系統計算，請自行預留。</Text>
       </Card>
 
       <Text style={[typography.heading, styles.themeHeading]}>探索主題</Text>
@@ -115,10 +119,15 @@ function Preparation() {
       </Card>
 
       <PrimaryButton label="替我找一個地方" onPress={() => void search()} />
+      {mode === 'real' && ['denied', 'unavailable'].includes(motionPermissionState.lastStatus) ? (
+        <Pressable onPress={() => void openMotionSettings()} style={styles.textButton}>
+          <Text style={styles.textButtonLabel}>前往設定檢查動作與健身權限</Text>
+        </Pressable>
+      ) : null}
       <Text style={[typography.small, styles.helper]}>
         {mode === 'real'
           ? '地點來自 OpenStreetMap 公開資料，不需要 API 金鑰或信用卡；網路服務可能暫時忙碌。'
-          : 'Demo 完全使用 App 內建假資料，不會產生費用。'}
+          : '展示模式完全使用 App 內建資料，不會產生費用。'}
       </Text>
     </Page>
   );
@@ -149,17 +158,21 @@ function Candidate() {
     startJourney,
     replaceCandidate,
     resetPreparation,
+    journeyIntent,
+    replacementMessage,
+    clearReplacementMessage,
   } = useExplorePath();
   if (!candidate) return null;
+  const isRescue = journeyIntent === 'rescue';
   const direction = destinationDirection(origin ?? ORIGIN, candidate);
   return (
     <Page>
       <View style={styles.headerRow}>
-        <Kicker>找到一個選項</Kicker>
+        <Kicker>{isRescue ? '尋回探索地點' : '找到一個選項'}</Kicker>
         <ModeBadge mode={mode} />
       </View>
-      <Text style={[typography.title, styles.candidateTitle]}>先不告訴你名字。</Text>
-      <Text style={typography.body}>跟著線索出發，抵達後才揭曉目的地。</Text>
+      <Text style={[typography.title, styles.candidateTitle]}>{isRescue ? '沿著曾走過的路，再探索一次。' : '先不告訴你名字。'}</Text>
+      <Text style={typography.body}>{isRescue ? '這趟仍會記錄步數、時間與健康足跡。' : '跟著線索出發，抵達後才揭曉目的地。'}</Text>
 
       <Card tone="green" style={styles.clueCard}>
         <Text style={styles.clueIcon}>{themeMeta[candidate.theme].icon}</Text>
@@ -182,12 +195,16 @@ function Candidate() {
         <View style={styles.summaryRow}>
           <Text style={typography.small}>你的設定</Text>
           <Text style={styles.summaryValue}>
-            {durationMinutes} 分鐘 · {themeMeta[theme].title}
+            {durationMinutes} 分鐘單程 · {themeMeta[theme].title}
           </Text>
         </View>
         <View style={styles.summaryRow}>
-          <Text style={typography.small}>保守預估</Text>
-          <Text style={styles.summaryValue}>約 {candidate.walkingMinutes} 分鐘步行</Text>
+          <Text style={typography.small}>去程估算</Text>
+          <Text style={styles.summaryValue}>約 {candidate.walkingMinutes} 分鐘</Text>
+        </View>
+        <View style={styles.summaryRow}>
+          <Text style={typography.small}>含緩衝的單程估算</Text>
+          <Text style={styles.summaryValue}>約 {candidate.totalMinutes} 分鐘</Text>
         </View>
       </Card>
 
@@ -198,9 +215,16 @@ function Candidate() {
         </Text>
       </Card>
 
-      <PrimaryButton label="開始探索" onPress={() => void startJourney()} />
+      {replacementMessage ? (
+        <Card tone="paper" style={styles.warningCard}>
+          <Text style={styles.warningTitle}>{replacementMessage}</Text>
+          <Pressable onPress={clearReplacementMessage}><Text style={styles.customToggleText}>知道了</Text></Pressable>
+        </Card>
+      ) : null}
+
+      <PrimaryButton label={isRescue ? '開始尋回探索' : '開始探索'} onPress={() => void startJourney()} />
       <View style={styles.buttonGap} />
-      <SecondaryButton label="換一個（不限次數）" onPress={() => void replaceCandidate()} />
+      <SecondaryButton label={isRescue ? '換一個尋回地點' : '換一個（不限次數）'} onPress={() => void replaceCandidate()} />
       <Pressable onPress={resetPreparation} style={styles.textButton}>
         <Text style={styles.textButtonLabel}>重新設定時間與主題</Text>
       </Pressable>
@@ -253,7 +277,7 @@ function NoResults() {
 }
 
 function BlockingIssue({ permission }: { permission: boolean }) {
-  const { searchIssue, search, resetPreparation, setMode } = useExplorePath();
+  const { searchIssue, search, resetPreparation } = useExplorePath();
   return (
     <Page scroll={false} contentStyle={styles.centerPage}>
       <Text style={styles.issueIcon}>{permission ? '⌖' : '↻'}</Text>
@@ -262,11 +286,7 @@ function BlockingIssue({ permission }: { permission: boolean }) {
       <View style={styles.issueActions}>
         <PrimaryButton label={permission ? '再次要求定位權限' : '重試相同條件'} onPress={() => void search()} />
         <View style={styles.buttonGap} />
-        {permission ? (
-          <SecondaryButton label="改用隔離的 Demo 模式" onPress={() => { resetPreparation(); setMode('demo'); }} />
-        ) : (
-          <SecondaryButton label="稍後再試" onPress={resetPreparation} />
-        )}
+        <SecondaryButton label={permission ? '返回探索設定' : '稍後再試'} onPress={resetPreparation} />
       </View>
       <Text style={[typography.small, styles.helper]}>不會自動改用假位置、付費服務或放寬你的條件。</Text>
     </Page>
@@ -292,14 +312,17 @@ const styles = StyleSheet.create({
   modeText: { color: colors.forest, fontSize: 11, fontWeight: '800' },
   hero: { marginTop: 24 },
   intro: { marginBottom: 21, marginTop: 12 },
-  modeSwitch: { backgroundColor: '#E8E2CF', borderRadius: radius.pill, flexDirection: 'row', padding: 4 },
-  modeChoice: { alignItems: 'center', borderRadius: radius.pill, flex: 1, paddingVertical: 10 },
-  modeChoiceSelected: { backgroundColor: colors.forest },
-  modeChoiceText: { color: colors.mutedInk, fontSize: 13, fontWeight: '800' },
-  modeChoiceTextSelected: { color: colors.white },
   modeHelp: { marginBottom: 23, marginTop: 8, textAlign: 'center' },
   sectionCard: { marginBottom: 28 },
   durationRow: { flexDirection: 'row', gap: 9, marginTop: 15 },
+  customToggle: { alignItems: 'center', marginTop: 13, padding: 6 },
+  customToggleText: { color: colors.forest, fontSize: 13, fontWeight: '800' },
+  customRow: { flexDirection: 'row', gap: 9, marginTop: 8 },
+  customInput: { backgroundColor: colors.paper, borderColor: colors.line, borderRadius: radius.medium, borderWidth: 1, color: colors.ink, flex: 1, fontSize: 16, paddingHorizontal: 14 },
+  customApply: { alignItems: 'center', backgroundColor: colors.forest, borderRadius: radius.medium, justifyContent: 'center', paddingHorizontal: 18 },
+  customApplyText: { color: colors.white, fontSize: 13, fontWeight: '800' },
+  customDisabled: { opacity: 0.35 },
+  budgetHelp: { marginTop: 10, textAlign: 'center' },
   themeHeading: { marginBottom: 12 },
   themeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   themeCell: { width: '48%' },

@@ -2,7 +2,7 @@
   "expo": {
     "name": "ExplorePath",
     "slug": "explorepath",
-    "version": "0.1.0",
+    "version": "0.9.1",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -11,16 +11,38 @@
       "bundleIdentifier": "com.example.explorepath.preview",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "ExplorePath 需要你使用 App 期間的位置，才能從目前位置尋找附近地點、提供方向並判定抵達。",
-        "NSMotionUsageDescription": "ExplorePath 使用 iPhone 步數提供探索加成；拒絕後仍可完成 GPS 探索。"
+        "NSMotionUsageDescription": "ExplorePath 只讀取每趟正式旅程期間的 iPhone 步數，用來產生本機健康足跡、估算距離與活動強度；不會讀取心率、睡眠或醫療資料。",
+        "NSCameraUsageDescription": "ExplorePath 在你主動掃描好友 QR 或拍攝任務照片時使用相機；照片只存在本機。",
+        "NSPhotoLibraryUsageDescription": "ExplorePath 只在你主動選擇代表照片時讀取所選照片，其他相簿內容不會上傳。",
+        "NSPhotoLibraryAddUsageDescription": "只有你按下儲存到照片時，ExplorePath 才會把任務照片加入 iPhone 相簿。"
       }
     },
     "plugins": [
+      "expo-notifications",
       [
         "expo-location",
         {
           "locationWhenInUsePermission": "ExplorePath 需要你使用 App 期間的位置，才能從目前位置尋找附近地點、提供方向並判定抵達。"
         }
-      ]
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "ExplorePath 只在你選擇拍照小任務時使用相機。",
+          "microphonePermission": false,
+          "photosPermission": "ExplorePath 只在你主動選擇代表照片時讀取所選照片。"
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "ExplorePath 不會讀取你的相簿。",
+          "granularPermissions": ["photo"],
+          "savePhotosPermission": "只有你按下儲存到照片時，ExplorePath 才會加入任務照片。"
+        }
+      ],
+      "expo-secure-store",
+      ["expo-camera", { "cameraPermission": "ExplorePath 在你主動掃描好友 QR 或拍攝任務照片時使用相機。", "recordAudioAndroid": false }]
     ],
     "splash": {
       "resizeMode": "contain",

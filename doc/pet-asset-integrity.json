@@ -1,0 +1,182 @@
+[
+  {
+    "path": "assets/pets/brass/egg.jpg",
+    "bytes": 5496485,
+    "sha256": "a342e767a81dd78f415ae5703b18fca0091913cdc102925273f151dce2d35b97",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": false
+  },
+  {
+    "path": "assets/pets/brass/juvenile.jpg",
+    "bytes": 2777819,
+    "sha256": "57d1b6128dc5eab529cc1bc655c91beda28ef2fd66a42c29f9eac40947d0105c",
+    "height": 2108,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": true
+  },
+  {
+    "path": "assets/pets/cloud/egg.jpg",
+    "bytes": 1502308,
+    "sha256": "2754ebb89b2e749c2c3eb16eacf4ea81d8672c973d1efa9d6207a11d6686dfce",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": true
+  },
+  {
+    "path": "assets/pets/compass/egg.jpg",
+    "bytes": 2551821,
+    "sha256": "bcfc046ef570e0d29f3696ffd5749fd3405f7d9e1bf8185f56c9dea4789120c4",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": true
+  },
+  {
+    "path": "assets/pets/frosted/egg.jpg",
+    "bytes": 4979834,
+    "sha256": "8572030768226008ffb7d3704b13fa95ad491aefae041dfb8e707f023374ede2",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": false
+  },
+  {
+    "path": "assets/pets/frosted/juvenile.jpg",
+    "bytes": 2022913,
+    "sha256": "44870a9429ed2e5ee5eee094c4a7fbdf5dc6c1c7d452933f54a60de2608a8a9e",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": true
+  },
+  {
+    "path": "assets/pets/marble/egg.jpg",
+    "bytes": 2742751,
+    "sha256": "9a56886358d8418d6279a1c65a7e710bc0eafaadba3ebe666e63a81613588760",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": false
+  },
+  {
+    "path": "assets/pets/marble/juvenile.jpg",
+    "bytes": 2130912,
+    "sha256": "95e18b9fab4578bc5208b3fced165fe0c3ed3ac596f98ae754df5f3788c2bf38",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": true
+  },
+  {
+    "path": "assets/pets/pebble/egg.jpg",
+    "bytes": 1808583,
+    "sha256": "8defb73fce956bfa3b328f6b52bf145a338161141c01cd0557e2d7feb58e4c95",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": true
+  },
+  {
+    "path": "assets/pets/pebble/juvenile.jpg",
+    "bytes": 1915059,
+    "sha256": "4fc0396096e04287de7767c1f286f1e052259eb3d16a86172c1cbd44afab8328",
+    "height": 2016,
+    "width": 2126,
+    "type": "jpg",
+    "limitedRead": true
+  },
+  {
+    "path": "assets/pets/porcelain/egg.jpg",
+    "bytes": 1731338,
+    "sha256": "1d10e9fa7a007023e76b63ac49d9f049bdbb925e42fe260a73fefe6a8e3e77a7",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": true
+  },
+  {
+    "path": "assets/pets/porcelain/juvenile.jpg",
+    "bytes": 2434273,
+    "sha256": "574cd817a284d9cd260ea176ebd39908717db0201a881189c4471bdceb1fbb93",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": true
+  },
+  {
+    "path": "assets/pets/stargazer/egg.jpg",
+    "bytes": 2088863,
+    "sha256": "7ae6d74891215371fbd05a292c218f1b91e341850cd0d8a4f3f2b25bd5547179",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": true
+  },
+  {
+    "path": "assets/pets/thought/egg.jpg",
+    "bytes": 1870603,
+    "sha256": "067ddfb1ce50f750fcbc5530fb1f4b97a5cbc0410e532e632a0405f89548939b",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": true
+  },
+  {
+    "path": "assets/pets/thought/juvenile.jpg",
+    "bytes": 3119637,
+    "sha256": "99b877880b53a0cf2fe6ebe9ab9e057300121cd94894752a82d9d9f870fe5957",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": false
+  },
+  {
+    "path": "assets/pets/voyager/egg.jpg",
+    "bytes": 3165830,
+    "sha256": "bc60059e93a08371705ed80705633043cbf7f4d0727efc76520ae001393d16a1",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": true
+  },
+  {
+    "path": "assets/pets/water/egg.jpg",
+    "bytes": 6460222,
+    "sha256": "a075ab935cf8a43bd9c222f83a3dba77a3521cbf54e441ea1071faa6be1b6be5",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": false
+  },
+  {
+    "path": "assets/pets/water/juvenile.jpg",
+    "bytes": 2343342,
+    "sha256": "f4ba118f7742417ff16cff04d17bede6642f6a85d7bc1ef6e1ff332854b3e4c9",
+    "height": 2108,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": true
+  },
+  {
+    "path": "assets/pets/wood/egg.jpg",
+    "bytes": 2727744,
+    "sha256": "1d99a5ba8079ec2768664f1773599d32070bc39e991160f24983927bd2caf252",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": true
+  },
+  {
+    "path": "assets/pets/wood/juvenile.jpg",
+    "bytes": 2037694,
+    "sha256": "817713b9586e8dc125900b30ce1c853ee720c6dc7cd806cfc05bfd9875644380",
+    "height": 2048,
+    "width": 2048,
+    "type": "jpg",
+    "limitedRead": true
+  }
+]

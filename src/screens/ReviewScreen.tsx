@@ -1,9 +1,9 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Card, Page, PrimaryButton, typography } from '../components/UI';
 import { moodMeta, themeMeta } from '../domain/rules';
-import { JourneyMood } from '../domain/types';
+import { JourneyEffort, JourneyMood } from '../domain/types';
 import { useExplorePath } from '../state/ExplorePathContext';
 import { colors, radius } from '../theme';
 
@@ -16,18 +16,33 @@ const moods: JourneyMood[] = [
   'disappointed',
 ];
 
+const efforts: Array<{ id: JourneyEffort; label: string; detail: string }> = [
+  { id: 'easy', label: '很輕鬆', detail: '幾乎不累' },
+  { id: 'steady', label: '剛剛好', detail: '可以繼續' },
+  { id: 'challenging', label: '有點吃力', detail: '需要休息' },
+  { id: 'hard', label: '很累', detail: '今天先到這裡' },
+];
+
 export function ReviewScreen() {
-  const { mode, candidate, activeJourney, review, setMood, setNote, togglePhoto, submitReview } =
+  const {
+    candidate,
+    activeJourney,
+    review,
+    memoryMessage,
+    setMood,
+    setEffort,
+    setNote,
+    captureReviewPhoto,
+    removeReviewPhoto,
+    submitReview,
+  } =
     useExplorePath();
   if (!candidate || !activeJourney) return null;
 
   return (
     <Page>
-      <View style={styles.successMark}>
-        <Text style={styles.check}>✓</Text>
-      </View>
-      <Text style={[typography.title, styles.center, styles.arrived]}>你到了！</Text>
-      <Text style={[typography.body, styles.center]}>神秘地點正式揭曉</Text>
+      <Text style={[typography.title, styles.center, styles.arrived]}>留下一段回憶</Text>
+      <Text style={[typography.body, styles.center]}>抵達已完成，現在記錄這趟的感受</Text>
 
       <Card tone="green" style={styles.destinationCard}>
         <Text style={styles.themeIcon}>{themeMeta[candidate.theme].icon}</Text>
@@ -62,29 +77,62 @@ export function ReviewScreen() {
         })}
       </View>
 
+      <Text style={[typography.heading, styles.effortHeading]}>身體感覺如何？</Text>
+      <Text style={[typography.small, styles.required]}>必填 · 這是你的主觀感受，不是醫療判定</Text>
+      <View style={styles.effortGrid}>
+        {efforts.map((effort) => {
+          const selected = review.effort === effort.id;
+          return (
+            <Pressable
+              key={effort.id}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
+              onPress={() => setEffort(effort.id)}
+              style={({ pressed }) => [
+                styles.effort,
+                selected && styles.selectedEffort,
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text style={[styles.effortLabel, selected && styles.selectedMoodLabel]}>{effort.label}</Text>
+              <Text style={[styles.effortDetail, selected && styles.selectedEffortDetail]}>{effort.detail}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ selected: review.hasPhoto }}
-        onPress={togglePhoto}
+        onPress={() => {
+          if (review.photoUri) void removeReviewPhoto();
+          else void captureReviewPhoto();
+        }}
         style={({ pressed }) => [
           styles.photoCard,
           review.hasPhoto && styles.photoSelected,
           pressed && styles.pressed,
         ]}
       >
-        <View style={styles.photoIconWrap}>
-          <Text style={styles.photoIcon}>▣</Text>
-        </View>
+        {review.photoUri ? (
+          <Image source={{ uri: review.photoUri }} style={styles.photoPreview} />
+        ) : (
+          <View style={styles.photoIconWrap}>
+            <Text style={styles.photoIcon}>▣</Text>
+          </View>
+        )}
         <View style={styles.photoCopy}>
           <Text style={styles.photoTitle}>
-            {review.hasPhoto ? '已標記這趟有拍照' : '替這趟探索留張照片'}
+            {review.photoUri ? '已加入一張代表照片' : '替這趟探索留張照片'}
           </Text>
           <Text style={typography.small}>
-            {mode === 'real' ? '選填 · 第一感測版只保存有拍照標記' : '選填 · Demo 不會開啟相機'}
+            選填 · 照片只保存在這支手機，也能完成後再補
           </Text>
         </View>
-        <Text style={styles.photoAction}>{review.hasPhoto ? '移除' : '加入'}</Text>
+        <Text style={styles.photoAction}>{review.photoUri ? '移除' : '拍照'}</Text>
       </Pressable>
+
+      {memoryMessage ? <Text style={[typography.small, styles.message]}>{memoryMessage}</Text> : null}
 
       <Text style={[typography.heading, styles.noteHeading]}>留一句話給未來的自己</Text>
       <TextInput
@@ -101,8 +149,8 @@ export function ReviewScreen() {
       <Text style={[typography.small, styles.count]}>{review.note.length} / 160</Text>
 
       <PrimaryButton
-        disabled={!review.mood}
-        label={review.mood ? '完成並領取獎勵' : '先選擇一個心情'}
+        disabled={!review.mood || !review.effort}
+        label={review.mood && review.effort ? '完成並查看健康摘要' : '先完成心情與身體感受'}
         onPress={submitReview}
       />
     </Page>
@@ -110,19 +158,8 @@ export function ReviewScreen() {
 }
 
 const styles = StyleSheet.create({
-  successMark: {
-    alignItems: 'center',
-    alignSelf: 'center',
-    backgroundColor: colors.softMoss,
-    borderRadius: 37,
-    height: 74,
-    justifyContent: 'center',
-    marginTop: 10,
-    width: 74,
-  },
-  check: { color: colors.forest, fontSize: 34, fontWeight: '800' },
   center: { textAlign: 'center' },
-  arrived: { marginTop: 17 },
+  arrived: { marginTop: 10 },
   destinationCard: { marginBottom: 27, marginTop: 22 },
   themeIcon: { fontSize: 34 },
   revealLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: '700', marginTop: 16 },
@@ -143,6 +180,13 @@ const styles = StyleSheet.create({
   moodEmoji: { fontSize: 25 },
   moodLabel: { color: colors.ink, fontSize: 12, fontWeight: '700', marginTop: 4 },
   selectedMoodLabel: { color: colors.white },
+  effortHeading: { marginTop: 25 },
+  effortGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 9 },
+  effort: { backgroundColor: colors.softWhite, borderColor: colors.line, borderRadius: radius.medium, borderWidth: 1, padding: 13, width: '48.5%' },
+  selectedEffort: { backgroundColor: colors.forest, borderColor: colors.forest },
+  effortLabel: { color: colors.ink, fontSize: 14, fontWeight: '800' },
+  effortDetail: { color: colors.mutedInk, fontSize: 11, marginTop: 3 },
+  selectedEffortDetail: { color: 'rgba(255,255,255,0.72)' },
   photoCard: {
     alignItems: 'center',
     backgroundColor: colors.softWhite,
@@ -163,9 +207,11 @@ const styles = StyleSheet.create({
     width: 48,
   },
   photoIcon: { color: colors.forest, fontSize: 22 },
+  photoPreview: { borderRadius: 16, height: 54, width: 54 },
   photoCopy: { flex: 1, paddingHorizontal: 12 },
   photoTitle: { color: colors.ink, fontSize: 14, fontWeight: '800', marginBottom: 2 },
   photoAction: { color: colors.forest, fontSize: 13, fontWeight: '800' },
+  message: { marginTop: 8 },
   noteHeading: { marginTop: 25 },
   input: {
     backgroundColor: colors.softWhite,

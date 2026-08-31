@@ -3,10 +3,7 @@ import {
   Destination,
   ExplorationTheme,
   JourneyMood,
-  PetSpecies,
   PetStage,
-  PetState,
-  RewardSummary,
   TimeSuggestion,
   XPBreakdown,
 } from './types';
@@ -31,12 +28,6 @@ export const moodMeta: Record<JourneyMood, { title: string; emoji: string }> = {
   curious: { title: '好奇', emoji: '🤔' },
   tired: { title: '有點累', emoji: '😮‍💨' },
   disappointed: { title: '失望', emoji: '😕' },
-};
-
-export const speciesMeta: Record<PetSpecies, { title: string; emoji: string }> = {
-  fox: { title: '狐狸', emoji: '🦊' },
-  otter: { title: '水獺', emoji: '🦦' },
-  raccoon: { title: '浣熊', emoji: '🦝' },
 };
 
 export const stageTitle: Record<PetStage, string> = {
@@ -96,68 +87,4 @@ export function xpBreakdown(steps: number): XPBreakdown {
   const arrivalXP = 100;
   const stepBonusXP = Math.min(Math.floor(Math.max(0, steps) / 100), 50);
   return { arrivalXP, stepBonusXP, totalXP: arrivalXP + stepBonusXP };
-}
-
-export function petStage(pet: PetState): PetStage {
-  if (!pet.hasEgg) return 'emptyRoom';
-  if (!pet.species) return 'egg';
-  if (pet.experience >= matureXP) return 'mature';
-  if (pet.experience >= growingXP) return 'growing';
-  return 'juvenile';
-}
-
-export function applyPetReward(
-  pet: PetState,
-  xp: XPBreakdown,
-  completedJourneyCount: number,
-  journeyId: string,
-): { pet: PetState; reward: RewardSummary } {
-  const previousStage = petStage(pet);
-
-  if (!pet.hasEgg) {
-    const nextPet = { hasEgg: true, species: null, experience: 0 } satisfies PetState;
-    return {
-      pet: nextPet,
-      reward: {
-        journeyId,
-        xp,
-        appliedPetXP: 0,
-        petEvent: 'foundEgg',
-        previousStage,
-        nextStage: petStage(nextPet),
-      },
-    };
-  }
-
-  const nextExperience = pet.experience + Math.max(0, xp.totalXP);
-  let nextSpecies = pet.species;
-  let petEvent: RewardSummary['petEvent'] = 'progressed';
-
-  if (!nextSpecies && nextExperience >= hatchXP) {
-    const species: PetSpecies[] = ['fox', 'otter', 'raccoon'];
-    nextSpecies = species[completedJourneyCount % species.length] ?? 'fox';
-    petEvent = 'hatched';
-  } else if (!nextSpecies) {
-    petEvent = 'eggProgressed';
-  }
-
-  const nextPet: PetState = {
-    hasEgg: true,
-    species: nextSpecies,
-    experience: nextExperience,
-  };
-  const nextStage = petStage(nextPet);
-  if (previousStage !== nextStage && petEvent === 'progressed') petEvent = 'evolved';
-
-  return {
-    pet: nextPet,
-    reward: {
-      journeyId,
-      xp,
-      appliedPetXP: xp.totalXP,
-      petEvent,
-      previousStage,
-      nextStage,
-    },
-  };
 }

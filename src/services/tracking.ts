@@ -61,14 +61,28 @@ export async function requestMotionAccess(): Promise<'available' | 'denied' | 'u
   }
 }
 
-export async function stepsSince(timestamp: number): Promise<number | null> {
+export async function checkMotionAccess(): Promise<'available' | 'denied' | 'unavailable'> {
+  try {
+    if (!(await Pedometer.isAvailableAsync())) return 'unavailable';
+    const current = await Pedometer.getPermissionsAsync();
+    return current.granted ? 'available' : 'denied';
+  } catch {
+    return 'unavailable';
+  }
+}
+
+export async function stepsBetween(startTimestamp: number, endTimestamp = Date.now()): Promise<number | null> {
   try {
     if (!(await Pedometer.isAvailableAsync())) return null;
-    const result = await Pedometer.getStepCountAsync(new Date(timestamp), new Date());
+    const result = await Pedometer.getStepCountAsync(new Date(startTimestamp), new Date(endTimestamp));
     return Math.max(0, result.steps);
   } catch {
     return null;
   }
+}
+
+export async function stepsSince(timestamp: number): Promise<number | null> {
+  return stepsBetween(timestamp);
 }
 
 export function watchSteps(onSteps: (steps: number) => void) {
